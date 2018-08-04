@@ -3,11 +3,15 @@ package main
 import (
 	"net/http"
 
-	"github.com/corinchappy/super-shopper/internal/database"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	if err := InitDb(); err != nil {
+		println(err.Error())
+		return
+	}
+
 	router := gin.Default()
 
 	// Query string parameters are parsed using the existing underlying request object.
@@ -21,8 +25,6 @@ func main() {
 
 	apiGroup := router.Group("/api")
 	APIRouter(apiGroup)
-
-	database.Database()
 
 	router.Run(":8080")
 }
