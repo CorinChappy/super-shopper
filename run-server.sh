@@ -1,1 +1,1 @@
-go run ./server/main.go
+go run ./internal/app/*.go
