@@ -8,13 +8,19 @@ import (
 
 const file = "./shopper.db"
 
+// Scannable is something that can scan
+type Scannable interface {
+	Scan(dest ...interface{}) error
+}
+
+var globalDB *sql.DB
+
 // InitDb adds the schema to the db if required
 func InitDb() error {
-	db, err := GetDb()
+	db, err := sql.Open("sqlite3", file)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
 
 	// Execute each item in schemas
 	for _, s := range GetSchemas() {
@@ -24,10 +30,14 @@ func InitDb() error {
 		}
 	}
 
+	// Assign to the global version
+	globalDB = db
+
 	return nil
 }
 
-// GetDb opens a database connection
-func GetDb() (*sql.DB, error) {
-	return sql.Open("sqlite3", file)
+// GetDb gets the open db connection
+// it is assumed that InitDb has been called
+func GetDb() *sql.DB {
+	return globalDB
 }
