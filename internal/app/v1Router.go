@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin/binding"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,7 +42,7 @@ type loginParams struct {
 func login(c *gin.Context) {
 	var json loginParams
 
-	err := c.ShouldBindWith(&json, binding.JSON)
+	err := c.ShouldBind(&json)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,7 +65,7 @@ func signup(c *gin.Context) {
 	// We can reuse login for signup
 	var json loginParams
 
-	err := c.ShouldBindWith(&json, binding.JSON)
+	err := c.ShouldBind(&json)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
