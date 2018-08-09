@@ -9,6 +9,7 @@ import (
 
 // V1Router sets up routes for the v1 of the api
 func V1Router(g *gin.RouterGroup) {
+	g.Use(AuthMiddleware())
 	g.GET("/healthcheck", healthCheck)
 	g.GET("/user/:userId", getUser)
 	g.POST("/login", login)

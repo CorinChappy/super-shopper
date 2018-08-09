@@ -120,3 +120,16 @@ func CreateUser(username string, password string) (*User, error) {
 
 	return GetUserByUsername(username)
 }
+
+// DecodeToken takes a jwt and converts it into its user
+func DecodeToken(tokenString string) (*User, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return secret, nil
+	})
+
+	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
+		return claims.User, nil
+	}
+
+	return nil, err
+}
