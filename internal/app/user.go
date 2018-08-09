@@ -21,7 +21,8 @@ type JwtCustomClaims struct {
 	jwt.StandardClaims
 }
 
-func rowToUser(r Scannable) (*User, error) {
+// RowToUser converts a scannable row to a User
+func RowToUser(r Scannable) (*User, error) {
 	user := User{}
 
 	err := r.Scan(&user.ID, &user.Username)
@@ -42,7 +43,7 @@ func GetUserByID(userID int) (*User, error) {
 	}
 	defer stmt.Close()
 
-	return rowToUser(stmt.QueryRow(userID))
+	return RowToUser(stmt.QueryRow(userID))
 }
 
 // GetUserByUsername returns the information about the user parameter
@@ -55,7 +56,7 @@ func GetUserByUsername(username string) (*User, error) {
 	}
 	defer stmt.Close()
 
-	return rowToUser(stmt.QueryRow(username))
+	return RowToUser(stmt.QueryRow(username))
 }
 
 // GetToken aquires a token for the given username, as long as the password is valid

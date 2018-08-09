@@ -11,9 +11,16 @@ import (
 func V1Router(g *gin.RouterGroup) {
 	g.Use(AuthMiddleware())
 	g.GET("/healthcheck", healthCheck)
+
+	// User functions
 	g.GET("/user/:userId", getUser)
 	g.POST("/login", login)
 	g.POST("/signup", signup)
+
+	// Group functions
+	g.GET("/group/:groupId", getGroup)
+	g.GET("/group/:groupId/users", getGroupUsers)
+	g.POST("/group/create", createGroup)
 }
 
 func healthCheck(c *gin.Context) {
@@ -79,4 +86,60 @@ func signup(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, user)
+}
+
+func getGroup(c *gin.Context) {
+	groupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Cannot parse groupId")
+	}
+
+	group, err := GetGroupByID(groupID)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Error getting group %s", err.Error())
+	}
+
+	c.JSON(http.StatusOK, group)
+}
+
+func getGroupUsers(c *gin.Context) {
+	groupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Cannot parse groupId")
+	}
+
+	users, err := GetUsersForGroupID(groupID)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Error getting users for group %s", err.Error())
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+type createGroupParams struct {
+	Name string `form:"name" json:"name" binding:"required"`
+}
+
+func createGroup(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "you must be logged in to do that"})
+		return
+	}
+
+	var json createGroupParams
+
+	err := c.ShouldBind(&json)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	group, err := CreateGroup(user.ID, json.Name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, group)
 }
