@@ -67,33 +67,81 @@ func (group *Group) GetUsersForGroup() ([]*User, error) {
 // CreateGroup creates a new group with the given user
 func CreateGroup(ownerID int, name string) (*Group, error) {
 	db := GetDb()
-
-	stmt, err := db.Prepare("INSERT INTO Group (name) VALUES (?)")
+	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
+
+	stmt, err := tx.Prepare("INSERT INTO Group (name) VALUES (?)")
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 
 	result, err := stmt.Exec(name)
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
 	groupID, err := result.LastInsertId()
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
-	stmt, err = db.Prepare("INSERT INTO GroupUser (groupID, userID) VALUES (?, ?)")
+	stmt, err = tx.Prepare("INSERT INTO GroupUser (groupID, userID) VALUES (?, ?)")
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
-	defer stmt.Close()
 
 	_, err = stmt.Exec(groupID, ownerID)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 
 	return GetGroupByID(int(groupID))
+}
+
+// AddUsers adds the users represented by their ids to a group
+func (group *Group) AddUsers(userIDs []int) error {
+	return AddUsersByGroupID(group.ID, userIDs)
+}
+
+// AddUsersByGroupID adds the users represented by their ids to a group
+func AddUsersByGroupID(groupID int, userIDs []int) error {
+	db := GetDb()
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO GroupUser (groupID, userID) VALUES (?, ?)")
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	for _, userID := range userIDs {
+		_, err = stmt.Exec(groupID, userID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -44,6 +45,39 @@ func GetUserByID(userID int) (*User, error) {
 	defer stmt.Close()
 
 	return RowToUser(stmt.QueryRow(userID))
+}
+
+// GetUsersByIDs returns user objects for each userId in the array
+func GetUsersByIDs(userIDs []int) ([]*User, error) {
+	db := GetDb()
+
+	stmt, err := db.Prepare("SELECT ID, username FROM User WHERE ID IN (?" + strings.Repeat(",?", len(userIDs)-1) + ")")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	args := make([]interface{}, len(userIDs))
+	for i, v := range userIDs {
+		args[i] = v
+	}
+	rows, err := stmt.Query(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*User, 0)
+	for rows.Next() {
+		user, err := RowToUser(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }
 
 // GetUserByUsername returns the information about the user parameter
