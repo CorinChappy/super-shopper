@@ -1,10 +1,10 @@
 package main
 
 import (
-	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -51,17 +51,13 @@ func GetUserByID(userID int) (*User, error) {
 func GetUsersByIDs(userIDs []int) ([]*User, error) {
 	db := GetDb()
 
-	stmt, err := db.Prepare("SELECT ID, username FROM User WHERE ID IN (?" + strings.Repeat(",?", len(userIDs)-1) + ")")
+	query, args, err := sqlx.In("SELECT ID, username FROM User WHERE ID IN (?)")
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
 
-	args := make([]interface{}, len(userIDs))
-	for i, v := range userIDs {
-		args[i] = v
-	}
-	rows, err := stmt.Query(args...)
+	query = db.Rebind(query)
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
