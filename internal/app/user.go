@@ -51,7 +51,7 @@ func GetUserByID(userID int) (*User, error) {
 func GetUsersByIDs(userIDs []int) ([]*User, error) {
 	db := GetDb()
 
-	query, args, err := sqlx.In("SELECT ID, username FROM User WHERE ID IN (?)")
+	query, args, err := sqlx.In("SELECT ID, username FROM User WHERE ID IN (?)", userIDs)
 	if err != nil {
 		return nil, err
 	}
