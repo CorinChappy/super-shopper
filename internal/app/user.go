@@ -4,6 +4,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +22,8 @@ type JwtCustomClaims struct {
 	jwt.StandardClaims
 }
 
-func rowToUser(r Scannable) (*User, error) {
+// RowToUser converts a scannable row to a User
+func RowToUser(r Scannable) (*User, error) {
 	user := User{}
 
 	err := r.Scan(&user.ID, &user.Username)
@@ -42,7 +44,36 @@ func GetUserByID(userID int) (*User, error) {
 	}
 	defer stmt.Close()
 
-	return rowToUser(stmt.QueryRow(userID))
+	return RowToUser(stmt.QueryRow(userID))
+}
+
+// GetUsersByIDs returns user objects for each userId in the array
+func GetUsersByIDs(userIDs []int) ([]*User, error) {
+	db := GetDb()
+
+	query, args, err := sqlx.In("SELECT ID, username FROM User WHERE ID IN (?)", userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	query = db.Rebind(query)
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*User, 0)
+	for rows.Next() {
+		user, err := RowToUser(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }
 
 // GetUserByUsername returns the information about the user parameter
@@ -55,7 +86,7 @@ func GetUserByUsername(username string) (*User, error) {
 	}
 	defer stmt.Close()
 
-	return rowToUser(stmt.QueryRow(username))
+	return RowToUser(stmt.QueryRow(username))
 }
 
 // GetToken aquires a token for the given username, as long as the password is valid
@@ -119,4 +150,17 @@ func CreateUser(username string, password string) (*User, error) {
 	}
 
 	return GetUserByUsername(username)
+}
+
+// DecodeToken takes a jwt and converts it into its user
+func DecodeToken(tokenString string) (*User, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return secret, nil
+	})
+
+	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
+		return claims.User, nil
+	}
+
+	return nil, err
 }

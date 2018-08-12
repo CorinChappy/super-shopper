@@ -1,8 +1,7 @@
 package main
 
 import (
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -13,11 +12,11 @@ type Scannable interface {
 	Scan(dest ...interface{}) error
 }
 
-var globalDB *sql.DB
+var globalDB *sqlx.DB
 
 // InitDb adds the schema to the db if required
 func InitDb() error {
-	db, err := sql.Open("sqlite3", file)
+	db, err := sqlx.Open("sqlite3", file)
 	if err != nil {
 		return err
 	}
@@ -38,6 +37,6 @@ func InitDb() error {
 
 // GetDb gets the open db connection
 // it is assumed that InitDb has been called
-func GetDb() *sql.DB {
+func GetDb() *sqlx.DB {
 	return globalDB
 }
