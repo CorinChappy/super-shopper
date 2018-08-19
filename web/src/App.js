@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Auth from './components/Authentication/Auth';
 
-import Header from './Header';
+import Header from './components/Header';
 
 
 export default class App extends Component {
@@ -13,6 +14,7 @@ export default class App extends Component {
     return (
       <div className="App">
         <Header />
+        <Auth />
       </div>
     )
   }

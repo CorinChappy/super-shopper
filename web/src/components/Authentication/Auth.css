@@ -1,0 +1,20 @@
+.paperContainer {
+    height: auto;
+    min-Height: 300px;
+    min-Width: 300px;
+    overflow-y: auto;
+    top : 30%;
+    left : 40%;
+    position: fixed;
+    padding: 48px 40px 36px;
+    display: inline-block;
+}
+
+.buttonDiv {
+    height: 40%;
+    width : 84%;
+    margin-top: 20px;
+    position: absolute;
+    display: flex;
+}
+
