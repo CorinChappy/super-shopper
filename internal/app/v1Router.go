@@ -21,6 +21,7 @@ func V1Router(g *gin.RouterGroup) {
 	g.GET("/group/:groupId", getGroup)
 	g.GET("/group/:groupId/users", getGroupUsers)
 	g.POST("/group/create", createGroup)
+	g.PUT("/group/:groupId/users", addGroupUsers)
 }
 
 func healthCheck(c *gin.Context) {
@@ -92,11 +93,13 @@ func getGroup(c *gin.Context) {
 	groupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.String(http.StatusBadRequest, "Cannot parse groupId")
+		return
 	}
 
 	group, err := GetGroupByID(groupID)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error getting group %s", err.Error())
+		return
 	}
 
 	c.JSON(http.StatusOK, group)
@@ -106,6 +109,7 @@ func getGroupUsers(c *gin.Context) {
 	groupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.String(http.StatusBadRequest, "Cannot parse groupId")
+		return
 	}
 
 	users, err := GetUsersForGroupID(groupID)
@@ -142,4 +146,37 @@ func createGroup(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, group)
+}
+
+type addUsersToGroupParams struct {
+	UserIDs []int `form:"userIDs" json:"userIDs" binding:"required"`
+}
+
+func addGroupUsers(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "you must be logged in to do that"})
+		return
+	}
+
+	groupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Cannot parse groupId")
+	}
+
+	var json addUsersToGroupParams
+
+	err = c.ShouldBind(&json)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = AddUsersByGroupID(groupID, json.UserIDs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
