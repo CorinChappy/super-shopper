@@ -39,9 +39,8 @@ export function logout(){
 
 
 export function attemptLogin(username, password){
-    let loginURI = '/login?username='+username+'&password='+password;
     return (dispatch) => {
-        requests.createPostRequest(loginURI)
+        requests.performLoginRequest(username, password)
         .then((response) => {
               dispatch(successfulLogin(response));
         })

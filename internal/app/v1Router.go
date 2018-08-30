@@ -65,6 +65,8 @@ func login(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 		"user":  user,
@@ -87,6 +89,8 @@ func signup(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -103,6 +107,8 @@ func getGroup(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, group)
 }
 
@@ -146,6 +152,8 @@ func createGroup(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusCreated, group)
 }
 
@@ -188,6 +196,8 @@ func addGroupUsers(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{})
 }
 
@@ -227,5 +237,7 @@ func removeGroupUsers(c *gin.Context) {
 		return
 	}
 
+	c.Header("Access-Control-Allow-Origin", "*")
+    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{})
 }

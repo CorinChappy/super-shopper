@@ -1,9 +1,10 @@
 import * as api from './apiConstants'
 
 
-export function createPostRequest(uri) {
-    let request = Object.assign(api.httpPostOptions, {
-        uri : api.BASE_URL + uri
-    });
-    return api.rp(request);
+const loginEndpoint = "/login"
+const signupEndpoint = "/signup"
+
+export function performLoginRequest(username, password) {
+    let uri = loginEndpoint + '?username='+username+'&password='+password;
+    return api.createPostRequest(uri);
 }   
