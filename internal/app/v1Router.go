@@ -4,11 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 // V1Router sets up routes for the v1 of the api
 func V1Router(g *gin.RouterGroup) {
+	g.Use(cors.Default())
 	g.Use(AuthMiddleware())
 	g.GET("/healthcheck", healthCheck)
 
@@ -65,8 +67,6 @@ func login(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 		"user":  user,
@@ -89,8 +89,6 @@ func signup(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -107,8 +105,6 @@ func getGroup(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, group)
 }
 
@@ -152,8 +148,6 @@ func createGroup(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusCreated, group)
 }
 
@@ -196,8 +190,6 @@ func addGroupUsers(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{})
 }
 
@@ -237,7 +229,5 @@ func removeGroupUsers(c *gin.Context) {
 		return
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-    c.Header("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers")
 	c.JSON(http.StatusOK, gin.H{})
 }
