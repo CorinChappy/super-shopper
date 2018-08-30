@@ -125,8 +125,9 @@ type createGroupParams struct {
 }
 
 func createGroup(c *gin.Context) {
-	user := c.MustGet("user").(*User)
-	if user == nil {
+	u, exists := c.Get("user")
+	user := u.(*User)
+	if !exists || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "you must be logged in to do that"})
 		return
 	}
@@ -153,8 +154,9 @@ type addUsersToGroupParams struct {
 }
 
 func addGroupUsers(c *gin.Context) {
-	user := c.MustGet("user").(*User)
-	if user == nil {
+	u, exists := c.Get("user")
+	user := u.(*User)
+	if !exists || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "you must be logged in to do that"})
 		return
 	}
