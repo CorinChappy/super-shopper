@@ -165,6 +165,15 @@ func addGroupUsers(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Cannot parse groupId")
 	}
 
+	inGroup, err := user.IsInGroup(groupID)
+	if !inGroup {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "you are not a member of that group"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
 	var json addUsersToGroupParams
 
 	err = c.ShouldBind(&json)
@@ -192,6 +201,15 @@ func removeGroupUsers(c *gin.Context) {
 	groupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
 		c.String(http.StatusBadRequest, "Cannot parse groupId")
+	}
+
+	inGroup, err := user.IsInGroup(groupID)
+	if !inGroup {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "you are not a member of that group"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
 	// Can reuse, as it's just a list of userIds
