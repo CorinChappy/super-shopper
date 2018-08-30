@@ -145,3 +145,34 @@ func AddUsersByGroupID(groupID int, userIDs []int) error {
 
 	return nil
 }
+
+// RemoveUsersFromGroupID removes the list of userIDs from the given group
+func RemoveUsersFromGroupID(groupID int, userIDs []int) error {
+	db := GetDb()
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("DELETE FROM GroupUser WHERE groupID = ? AND userID = ?")
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	for _, userID := range userIDs {
+		_, err = stmt.Exec(groupID, userID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

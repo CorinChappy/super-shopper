@@ -22,6 +22,7 @@ func V1Router(g *gin.RouterGroup) {
 	g.GET("/group/:groupId/users", getGroupUsers)
 	g.POST("/group/create", createGroup)
 	g.PUT("/group/:groupId/users", addGroupUsers)
+	g.DELETE("/group/:groupId/users", removeGroupUsers)
 }
 
 func healthCheck(c *gin.Context) {
@@ -175,6 +176,37 @@ func addGroupUsers(c *gin.Context) {
 	}
 
 	err = AddUsersByGroupID(groupID, json.UserIDs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func removeGroupUsers(c *gin.Context) {
+	u, exists := c.Get("user")
+	user := u.(*User)
+	if !exists || user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "you must be logged in to do that"})
+		return
+	}
+
+	groupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Cannot parse groupId")
+	}
+
+	// Can reuse, as it's just a list of userIds
+	var json addUsersToGroupParams
+
+	err = c.ShouldBind(&json)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = RemoveUsersFromGroupID(groupID, json.UserIDs)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
