@@ -21,7 +21,7 @@ func rowToGroup(r Scannable) (*Group, error) {
 func GetGroupByID(groupID int) (*Group, error) {
 	db := GetDb()
 
-	stmt, err := db.Prepare("SELECT ID, name FROM Group WHERE ID = ?")
+	stmt, err := db.Prepare("SELECT ID, name FROM [Group] WHERE ID = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func CreateGroup(ownerID int, name string) (*Group, error) {
 		return nil, err
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO Group (name) VALUES (?)")
+	stmt, err := tx.Prepare("INSERT INTO [Group] (name) VALUES (?)")
 	if err != nil {
 		tx.Rollback()
 		return nil, err
