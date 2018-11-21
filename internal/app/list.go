@@ -2,13 +2,59 @@ package main
 
 import "time"
 
-// List represents a ist
+// List represents a list
 type List struct {
-	ID       int       `json:"ID"`
-	GroupID  int       `json:"groupID"`
-	Name     string    `json:"name"`
-	Created  time.Time `json:"created"`
-	Modified time.Time `json:"modified"`
+	ID       int         `json:"ID"`
+	GroupID  int         `json:"groupID"`
+	Name     string      `json:"name"`
+	Created  time.Time   `json:"created"`
+	Modified time.Time   `json:"modified"`
+	Items    []*ListItem `json:"items"`
+}
+
+// ListItem represents an item in a list
+type ListItem struct {
+	Name    string `json:"name"`
+	Checked bool   `json:"checked"`
+}
+
+func rowToListItem(r Scannable) (*ListItem, error) {
+	listItem := ListItem{}
+
+	err := r.Scan(&listItem.Name, &listItem.Checked)
+	if err != nil {
+		return nil, err
+	}
+
+	return &listItem, nil
+}
+
+func getListItems(listID int) ([]*ListItem, error) {
+	db := GetDb()
+
+	stmt, err := db.Prepare("SELECT name, checked FROM ListItem WHERE listID = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(listID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	listItems := make([]*ListItem, 0)
+	for rows.Next() {
+		listItem, err := rowToListItem(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		listItems = append(listItems, listItem)
+	}
+
+	return listItems, nil
 }
 
 func rowToList(r Scannable) (*List, error) {
@@ -46,10 +92,23 @@ func GetListByID(listID int) (*List, error) {
 	}
 	defer stmt.Close()
 
-	return rowToList(stmt.QueryRow(listID))
+	list, err := rowToList(stmt.QueryRow(listID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate the items
+	items, err := getListItems(listID)
+	if err != nil {
+		return nil, err
+	}
+
+	list.Items = items
+
+	return list, nil
 }
 
-// CreateList creates a new list within the given  group and with the given name
+// CreateList creates a new list within the given group and with the given name
 func CreateList(groupID int, name string) (*List, error) {
 	db := GetDb()
 	now := time.Now().Format(time.RFC3339)

@@ -27,5 +27,12 @@ func GetSchemas() []string {
 			modified	TEXT NOT NULL,
 			FOREIGN KEY(groupID) REFERENCES 'Group'(ID) ON UPDATE CASCADE ON DELETE CASCADE
 		);`,
+		`CREATE TABLE IF NOT EXISTS ListItem (
+			listID	INTEGER NOT NULL,
+			name	TEXT DEFAULT "",
+			checked	INTEGER DEFAULT 0,
+			PRIMARY KEY(listID,name),
+			FOREIGN KEY(listID) REFERENCES List(ID) ON UPDATE CASCADE ON DELETE CASCADE
+		);`,
 	}
 }
