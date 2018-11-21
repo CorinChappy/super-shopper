@@ -25,6 +25,8 @@ func V1Router(g *gin.RouterGroup) {
 	g.POST("/group/create", createGroup)
 	g.PUT("/group/:groupId/users", addGroupUsers)
 	g.DELETE("/group/:groupId/users", removeGroupUsers)
+
+	g.GET("/list/:listId", getList)
 }
 
 func healthCheck(c *gin.Context) {
@@ -230,4 +232,20 @@ func removeGroupUsers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func getList(c *gin.Context) {
+	listID, err := strconv.Atoi(c.Param("listId"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Cannot parse listId")
+		return
+	}
+
+	list, err := GetListByID(listID)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Error getting list %s", err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, list)
 }
